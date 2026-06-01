@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RIBONNE | 결제 실패</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap');
+  :root { --rose:#E0607E; --ink:#44343A; --gray:#8C7B82; --cream:#FBEFEF; --line:#F0DEDE; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'Gowun Dodum','Apple SD Gothic Neo',sans-serif; color:var(--ink);
+    background: radial-gradient(1200px 600px at 70% -10%, #F8DDE2 0%, transparent 60%), linear-gradient(180deg,#FBF3EF,#FAEDED);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .serif { font-family:'Gowun Batang', serif; }
+  .card { background:#fff; border-radius:28px; padding:42px 36px; max-width:480px; width:100%; box-shadow:0 24px 50px rgba(150,90,100,.14); border:1px solid var(--line); text-align:center; }
+  .x { width:76px; height:76px; border-radius:9999px; background:#FCE8EC; display:flex; align-items:center; justify-content:center; margin:0 auto 22px; }
+  h1 { font-size:27px; font-weight:700; margin-bottom:10px; }
+  .sub { color:var(--gray); font-size:15px; line-height:1.7; margin-bottom:26px; }
+  .info { background:var(--cream); border-radius:18px; padding:20px; text-align:left; margin-bottom:24px; }
+  .row { display:flex; justify-content:space-between; gap:12px; padding:9px 0; font-size:13.5px; border-bottom:1px dashed var(--line); }
+  .row:last-child { border-bottom:none; }
+  .row .k { color:var(--gray); flex-shrink:0; }
+  .row .v { color:var(--ink); word-break:break-all; text-align:right; }
+  .btns { display:flex; gap:10px; }
+  .btn { flex:1; padding:16px; border-radius:16px; border:none; font-size:15px; cursor:pointer; font-family:inherit; text-decoration:none; text-align:center; }
+  .btn.primary { background:var(--rose); color:#fff; box-shadow:0 10px 20px rgba(224,96,126,.32); }
+  .btn.ghost { background:#fff; color:var(--ink); border:1.5px solid var(--line); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="x">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#E0607E" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+    <h1 class="serif">결제가 중단됐어요</h1>
+    <p class="sub">결제를 취소했거나 처리 중 문제가 생겼어요.<br>다시 시도해 주세요.</p>
+
+    <div class="info" id="info"></div>
+
+    <div class="btns">
+      <a href="ribonne-final.html" class="btn ghost">쇼핑몰로</a>
+      <a href="ribonne-final.html" class="btn primary">다시 시도</a>
+    </div>
+  </div>
+
+<script>
+  // 결제창에서 failUrl 로 넘어오면 쿼리 파라미터로 에러가 전달돼요.
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get("code");
+  var message = params.get("message");
+
+  var box = document.getElementById("info");
+  box.innerHTML =
+    '<div class="row"><span class="k">에러 코드</span><span class="v">' + (code || "알 수 없음") + '</span></div>' +
+    '<div class="row"><span class="k">메시지</span><span class="v">' + (message || "결제가 완료되지 않았어요") + '</span></div>';
+</script>
+</body>
+</html>

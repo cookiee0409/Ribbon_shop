@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RIBONNE | 오늘의 나를 묶는 작은 리본</title>
+<!-- 토스페이먼츠 결제 SDK v2 -->
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<style>
+  /* ===== 폰트 ===== */
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap');
+
+  /* ===== 색상 변수 (Claude RIBONNE 스킨: 로즈/코랄 핑크) ===== */
+  :root {
+    --rose:#E0607E; --rose-dark:#C44E6B; --coral:#F08398;
+    --ink:#44343A; --gray:#8C7B82; --cream:#FBEFEF; --line:#F0DEDE;
+    --gold:#F6C76A; --radius:22px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:'Gowun Dodum','Apple SD Gothic Neo',sans-serif; color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 70% -10%, #F8DDE2 0%, transparent 60%),
+      linear-gradient(180deg, #FBF3EF 0%, #FAEDED 100%);
+    background-attachment:fixed; min-height:100vh; overflow-x:hidden;
+  }
+  .serif { font-family:'Gowun Batang', serif; }
+  ::-webkit-scrollbar { width:10px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#EAC9CF; border-radius:9999px; }
+
+  /* ===== 상단 띠 ===== */
+  .topbar { background:#3A2D31; color:#fff; text-align:center; font-size:12.5px; padding:9px 12px; letter-spacing:.2px; position:relative; z-index:2; }
+  .topbar b { color:#F3B6C2; font-weight:700; }
+
+  /* ===== 네비 ===== */
+  nav { background:rgba(255,255,255,.78); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:40; }
+  .nav-inner { max-width:1180px; margin:0 auto; padding:18px 28px; display:flex; align-items:center; justify-content:space-between; }
+  .brand { font-size:27px; letter-spacing:4px; font-weight:700; color:var(--ink); text-decoration:none; }
+  .brand .mid { color:var(--rose); }
+  .nav-menu { display:flex; gap:30px; list-style:none; font-size:15px; }
+  .nav-menu a { color:var(--gray); text-decoration:none; transition:color .15s; cursor:pointer; }
+  .nav-menu a:hover, .nav-menu a.on { color:var(--rose); }
+  .nav-menu a.on { font-weight:700; }
+  .nav-icons { display:flex; gap:16px; align-items:center; }
+  .nav-icons button { border:none; background:transparent; cursor:pointer; color:var(--ink); position:relative; display:flex; align-items:center; }
+  .nav-icons button:hover { color:var(--rose); }
+  .nbadge { position:absolute; top:-8px; right:-9px; min-width:17px; height:17px; padding:0 4px; border-radius:9999px; background:var(--rose); color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; }
+
+  main { position:relative; z-index:1; }
+  .wrap { max-width:1180px; margin:0 auto; padding:0 28px; }
+  .section { padding:74px 0; }
+  .eyebrow { color:var(--rose); letter-spacing:4px; font-size:12px; font-weight:700; text-transform:uppercase; }
+  .eyebrow:before { content:''; display:inline-block; width:22px; height:2px; background:var(--rose); vertical-align:middle; margin-right:11px; }
+
+  /* ===== 히어로 ===== */
+  .hero { display:grid; grid-template-columns:1fr 1fr; gap:44px; padding:56px 28px 30px; align-items:center; max-width:1180px; margin:0 auto; }
+  .hero h1 { font-size:60px; line-height:1.18; font-weight:700; margin:22px 0 24px; }
+  .hero h1 .hl { color:var(--rose); position:relative; }
+  .hero h1 .hl::after { content:""; position:absolute; left:-2px; right:-2px; bottom:6px; height:14px; background:var(--gold); opacity:.55; border-radius:8px; z-index:-1; }
+  .hero p { color:var(--gray); font-size:16px; line-height:1.9; max-width:430px; margin-bottom:34px; }
+  .hero-actions { display:flex; gap:14px; margin-bottom:46px; }
+  .stats { display:flex; gap:44px; }
+  .stat b { display:block; font-size:34px; font-weight:700; font-family:'Gowun Batang'; color:var(--ink); }
+  .stat small { color:var(--gray); font-size:13px; margin-top:4px; display:block; }
+
+  /* 버튼 공통 */
+  .btn { border:none; border-radius:9999px; padding:15px 26px; font-family:inherit; font-size:15px; font-weight:400; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:9px; transition:transform .15s, box-shadow .15s; }
+  .btn:hover { transform:translateY(-2px); }
+  .btn.primary { background:var(--rose); color:#fff; box-shadow:0 12px 26px rgba(224,96,126,.35); }
+  .btn.outline { background:#fff; color:var(--ink); border:1.5px solid var(--line); }
+  .btn.outline:hover { border-color:var(--rose); }
+  .btn.small { padding:11px 20px; font-size:14px; }
+
+  /* 히어로 비주얼 */
+  .atelier { position:relative; border:2px dashed #E6C3C9; border-radius:28px; background:linear-gradient(160deg,#FCEFF1,#F7E2E6); aspect-ratio:4/3.4; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#C9A4AC; }
+  .atelier .ph-icon { width:46px; height:46px; opacity:.6; margin-bottom:14px; }
+  .atelier .ph-text { font-size:14px; }
+  .atelier .ph-text a { color:var(--rose); text-decoration:underline; cursor:pointer; }
+  .float-card { position:absolute; background:#fff; border-radius:16px; padding:12px 16px; display:flex; align-items:center; gap:12px; box-shadow:0 14px 30px rgba(120,70,80,.16); }
+  .float-card .fc-img { width:40px; height:40px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .float-card .fc-name { font-size:14px; font-weight:700; }
+  .float-card .fc-sub { font-size:11px; color:var(--gray); margin-top:2px; }
+  .fc-top { top:36px; right:-14px; animation:floaty 4s ease-in-out infinite; }
+  .fc-bottom { bottom:36px; left:-22px; animation:floaty 4.6s ease-in-out infinite; }
+
+  /* ===== 혜택 바 ===== */
+  .benefits { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; border-top:1px solid var(--line); padding:30px 0 0; margin-top:14px; }
+  .benefit { display:flex; gap:14px; align-items:center; }
+  .benefit .pico { width:44px; height:44px; border-radius:14px; background:#F8E3E7; color:var(--rose); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .benefit b { font-size:15px; }
+  .benefit small { display:block; font-size:12.5px; color:var(--gray); margin-top:3px; }
+
+  /* ===== 섹션 헤드 ===== */
+  .section-head { margin-bottom:34px; }
+  .section-head.center { text-align:center; }
+  .section-head.center .eyebrow:before { display:none; }
+  .section-head h2 { font-size:40px; line-height:1.22; margin:10px 0 12px; font-weight:700; }
+  .section-desc { color:var(--gray); font-size:15px; line-height:1.9; max-width:560px; }
+  .section-head.center .section-desc { margin:0 auto; }
+
+  /* ===== 퍼스널 큐레이션 필터 ===== */
+  .filter-panel { background:#fff; border-radius:26px; padding:34px 32px; box-shadow:0 18px 40px rgba(150,90,100,.10); border:1px solid var(--line); }
+  .filter-row { display:grid; grid-template-columns:140px 1fr; gap:16px 28px; align-items:start; padding:16px 0; border-bottom:1px dashed var(--line); }
+  .filter-row:first-child { padding-top:0; }
+  .filter-row:last-child { border-bottom:none; }
+  .filter-label { font-size:14px; font-weight:700; }
+  .filter-label small { display:block; font-size:10px; color:#C2A9AF; letter-spacing:.13em; margin-top:7px; }
+  .chips { display:flex; flex-wrap:wrap; gap:10px; }
+  .chip { height:38px; border:1.5px solid var(--line); border-radius:9999px; background:#fff; color:var(--gray); padding:0 20px; font-family:inherit; font-size:13px; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; }
+  .chip:hover { border-color:var(--coral); }
+  .chip.active { background:var(--rose); color:#fff; border-color:var(--rose); box-shadow:0 6px 14px rgba(224,96,126,.26); }
+  .chip .dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:var(--dot,#d89469); margin-right:8px; }
+  .filter-bottom { display:flex; align-items:center; justify-content:space-between; padding-top:22px; font-size:14px; color:var(--gray); flex-wrap:wrap; gap:12px; }
+  .filter-bottom b { font-size:20px; color:var(--rose); font-family:'Gowun Batang'; }
+
+  /* ===== 상품 카드 ===== */
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:24px; margin-top:30px; }
+  .product { background:#fff; border-radius:22px; padding:16px; border:1px solid var(--line); position:relative; transition:transform .18s, box-shadow .18s; cursor:pointer; }
+  .product:hover { transform:translateY(-6px); box-shadow:0 22px 38px rgba(150,90,100,.16); }
+  .thumb { border-radius:16px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; position:relative; }
+  .badge { position:absolute; left:12px; top:12px; z-index:2; color:#fff; border-radius:9999px; padding:5px 11px; font-size:10px; font-weight:700; }
+  .heart-btn { position:absolute; right:10px; top:10px; width:36px; height:36px; border-radius:9999px; border:none; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.08); }
+  .heart-btn:active { transform:scale(.92); }
+  .product h3 { font-size:15px; margin:14px 4px 8px; font-weight:400; }
+  .rate { display:flex; align-items:center; gap:4px; color:var(--gray); font-size:12px; margin:0 4px 6px; }
+  .taglist { display:flex; gap:6px; flex-wrap:wrap; margin:0 4px; }
+  .taglist span { font-size:10px; background:#F8E3E7; color:var(--rose-dark); border-radius:9999px; padding:5px 9px; }
+  .why { font-size:12px; color:var(--gray); line-height:1.6; min-height:38px; margin:10px 4px 0; }
+  .price { font-weight:700; font-family:'Gowun Batang'; margin:8px 4px 4px; color:var(--ink); font-size:18px; }
+  .dots { display:flex; gap:5px; margin:10px 4px 2px; }
+  .dot-sw { width:15px; height:15px; border-radius:9999px; flex-shrink:0; }
+  .no-result { text-align:center; color:var(--gray); padding:50px 0; grid-column:1/-1; }
+
+  /* ===== split 레이아웃 ===== */
+  .split { display:grid; grid-template-columns:.95fr 1.05fr; gap:32px; align-items:start; }
+  .white-card { background:#fff; border-radius:26px; padding:28px; box-shadow:0 18px 40px rgba(150,90,100,.10); border:1px solid var(--line); }
+
+  /* ===== 랜덤박스 ===== */
+  .mood-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .mood-card { border:2px solid var(--line); background:#fff; border-radius:18px; padding:18px 16px; font-family:inherit; text-align:left; font-weight:700; color:var(--ink); cursor:pointer; transition:all .15s; }
+  .mood-card:hover { border-color:var(--coral); }
+  .mood-card small { display:block; font-weight:400; color:var(--gray); margin-top:8px; font-size:11px; line-height:1.5; }
+  .mood-card.active { border-color:var(--rose); background:var(--cream); }
+  .box-preview { min-height:370px; background:linear-gradient(135deg,#FCEFF1,#F8E2E6); border-radius:26px; padding:32px; position:relative; overflow:hidden; }
+  .box-preview h3 { font-size:30px; line-height:1.28; margin:12px 0; font-weight:700; color:var(--ink); }
+  .box-preview p { font-size:14px; line-height:1.8; color:var(--gray); }
+  .items { display:grid; gap:10px; margin-top:22px; }
+  .item { display:flex; justify-content:space-between; background:rgba(255,255,255,.8); border-radius:14px; padding:13px 15px; font-size:13px; }
+  .item b { color:var(--rose); }
+
+  /* ===== 후기 ===== */
+  .review-layout { display:grid; grid-template-columns:380px 1fr; gap:26px; }
+  .score { background:#fff; border-radius:26px; padding:30px; box-shadow:0 18px 40px rgba(150,90,100,.10); border:1px solid var(--line); }
+  .score-num { text-align:center; font-size:68px; color:var(--rose); font-weight:700; font-family:'Gowun Batang'; }
+  .stars { text-align:center; color:var(--gold); letter-spacing:.08em; font-size:18px; }
+  .review-count { text-align:center; color:var(--gray); font-size:13px; margin:6px 0 18px; }
+  .bar { display:grid; grid-template-columns:30px 1fr 40px; gap:10px; align-items:center; margin:10px 0; font-size:11px; color:var(--gray); }
+  .track { height:8px; background:#F3E0E3; border-radius:9999px; overflow:hidden; }
+  .track i { display:block; height:100%; background:var(--coral); border-radius:9999px; }
+  .photo-review { display:grid; grid-template-columns:280px 1fr; background:#fff; border-radius:26px; overflow:hidden; box-shadow:0 18px 40px rgba(150,90,100,.10); border:1px solid var(--line); }
+  .photo-box { min-height:300px; background:linear-gradient(135deg,#FCEFF1,#F7E2E6); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:#C9A4AC; font-size:13px; gap:6px; }
+  .review-body { padding:28px; }
+  .review-body h3 { font-size:18px; margin:14px 0 8px; font-weight:700; }
+  .verified { font-size:11px; color:#5BA9C2; }
+  .quote { font-size:13px; line-height:1.85; color:var(--ink); margin:8px 0; }
+  .review-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:24px; }
+  .small-review { background:#fff; border-radius:22px; padding:20px; box-shadow:0 12px 26px rgba(150,90,100,.08); border:1px solid var(--line); }
+  .small-review b { font-size:14px; }
+  .small-img { height:108px; border-radius:14px; background:linear-gradient(135deg,#FCEFF1,#F4D9DF); display:flex; align-items:center; justify-content:center; font-size:12px; color:#B79AA0; margin-top:14px; }
+
+  /* ===== 선물 퀴즈 ===== */
+  .quiz-progress { height:9px; border-radius:9999px; background:#F3E0E3; overflow:hidden; margin-bottom:22px; }
+  .quiz-progress i { display:block; height:100%; width:25%; background:var(--rose); border-radius:9999px; transition:width .3s; }
+  .quiz-q { font-size:20px; font-weight:700; margin-bottom:18px; }
+  .quiz-options { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .quiz-option { border:2px solid var(--line); background:#fff; border-radius:16px; min-height:52px; font-family:inherit; font-size:14px; color:var(--ink); cursor:pointer; padding:10px; transition:all .15s; }
+  .quiz-option:hover { border-color:var(--coral); }
+  .quiz-option.active { border-color:var(--rose); background:var(--cream); }
+  .gift-result { background:linear-gradient(135deg,#FCEFF1,#F8E2E6); border-radius:26px; padding:32px; min-height:370px; }
+  .gift-result h3 { font-size:28px; margin:12px 0; font-weight:700; color:var(--ink); }
+  .gift-result p { font-size:14px; line-height:1.85; color:var(--gray); }
+  .gift-result ul { margin:18px 0; padding-left:18px; }
+  .gift-result li { line-height:1.9; color:var(--ink); font-size:14px; }
+
+  /* ===== CTA / 푸터 ===== */
+  .cta { text-align:center; background:rgba(255,255,255,.4); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .cta h2 { font-size:38px; line-height:1.3; margin-bottom:18px; font-weight:700; }
+  footer { min-height:90px; display:flex; align-items:center; justify-content:center; color:var(--gray); font-size:12px; padding:30px; }
+
+  /* ===== 모달 / 드로어 / 토스트 (Claude 기능 유지) ===== */
+  .overlay { position:fixed; inset:0; background:rgba(70,52,58,.4); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .modal { background:#fff; border-radius:26px; width:min(860px,94vw); max-height:92vh; overflow:auto; animation:rise .25s ease; display:grid; grid-template-columns:1fr 1fr; }
+  .modal-img { display:flex; align-items:center; justify-content:center; padding:30px; min-height:320px; border-radius:26px 0 0 26px; }
+  .modal-info { padding:30px; position:relative; }
+  .close { position:absolute; top:18px; right:18px; border:none; background:var(--cream); width:36px; height:36px; border-radius:9999px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .cat-tag { font-size:12px; color:var(--rose); background:#F8E3E7; padding:5px 13px; border-radius:9999px; font-weight:700; }
+  .modal-info h2 { font-size:27px; margin:15px 0 7px; font-weight:700; }
+  .modal-rate { display:flex; align-items:center; gap:5px; color:var(--gray); font-size:13px; margin-bottom:13px; }
+  .modal-price { font-size:30px; font-weight:700; font-family:'Gowun Batang'; color:var(--rose); margin-bottom:18px; }
+  .modal-why { font-size:13px; color:var(--gray); line-height:1.7; margin-bottom:18px; }
+  .swatch-label { font-size:14px; margin-bottom:11px; color:var(--gray); }
+  .swatches { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .swatch { width:34px; height:34px; border-radius:9999px; cursor:pointer; border:2px solid rgba(0,0,0,.05); flex-shrink:0; transition:box-shadow .15s; }
+  .swatch.active { box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--rose); }
+  .size-note { background:var(--cream); border-radius:14px; padding:12px 16px; font-size:13px; color:var(--gray); margin-bottom:18px; }
+  .qty-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .qty { display:flex; align-items:center; gap:4px; background:var(--cream); border-radius:9999px; padding:4px; }
+  .qbtn { width:32px; height:32px; border-radius:9999px; border:none; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--gray); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .qbtn:active { transform:scale(.9); }
+  .qnum { width:34px; text-align:center; font-size:17px; font-family:'Gowun Batang'; }
+  .actions { display:flex; gap:10px; }
+  .wish-lg { width:56px; border-radius:16px; border:1.5px solid #F3C9D2; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .add-btn { flex:1; padding:16px; border-radius:16px; border:none; background:var(--rose); color:#fff; font-size:16px; cursor:pointer; font-family:inherit; box-shadow:0 10px 20px rgba(224,96,126,.32); }
+  .add-btn:active { transform:scale(.98); }
+  .restock-btn { width:100%; padding:16px; border-radius:16px; border:none; background:var(--cream); color:#B79AA0; font-size:16px; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+  .drawer { position:fixed; top:0; right:0; height:100%; width:min(420px,92vw); background:#FBF3EF; animation:slideIn .28s ease; display:flex; flex-direction:column; border-radius:26px 0 0 26px; }
+  .drawer-head { padding:24px 22px 14px; display:flex; align-items:center; justify-content:space-between; }
+  .drawer-head h3 { font-size:22px; font-weight:700; }
+  .drawer-body { flex:1; overflow:auto; padding:0 18px; }
+  .citem { background:#fff; border-radius:18px; padding:12px; margin-bottom:12px; display:flex; gap:12px; align-items:center; }
+  .citem-img { width:72px; height:72px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .citem-body { flex:1; min-width:0; }
+  .citem-name { font-size:14px; }
+  .citem-opt { font-size:12px; color:var(--gray); margin:2px 0 6px; }
+  .citem-foot { display:flex; align-items:center; justify-content:space-between; }
+  .mini-qty { display:flex; align-items:center; gap:2px; background:var(--cream); border-radius:9999px; padding:2px; }
+  .mini-qbtn { width:26px; height:26px; border-radius:9999px; border:none; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--gray); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .mini-qnum { width:24px; text-align:center; font-size:14px; font-family:'Gowun Batang'; }
+  .x-btn { border:none; background:transparent; cursor:pointer; color:#D8B9BF; align-self:flex-start; }
+  .small-add { font-size:13px; padding:7px 15px; border-radius:9999px; border:none; background:var(--rose); color:#fff; cursor:pointer; font-family:inherit; }
+  .small-add:disabled { background:var(--cream); color:#C0A8AE; cursor:default; }
+  .checkout { padding:18px; background:#fff; border-radius:26px 0 0 0; }
+  .ship-text { font-size:13px; color:var(--gray); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .ship-bar { height:8px; background:#F3E0E3; border-radius:9999px; overflow:hidden; }
+  .ship-fill { height:100%; background:linear-gradient(90deg,var(--rose),var(--coral)); border-radius:9999px; transition:width .3s; }
+  .total-row { display:flex; justify-content:space-between; align-items:baseline; margin:14px 0 12px; }
+  .total-num { font-size:24px; font-weight:700; font-family:'Gowun Batang'; color:var(--rose); }
+  .order-btn { width:100%; padding:16px; border-radius:16px; border:none; background:var(--rose); color:#fff; font-size:16px; cursor:pointer; font-family:inherit; box-shadow:0 10px 20px rgba(224,96,126,.32); }
+  .empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:70px 0; gap:14px; color:#C9B2B8; }
+  .toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:13px 22px; border-radius:9999px; font-size:14px; z-index:60; display:flex; align-items:center; gap:8px; animation:rise .25s ease; box-shadow:0 10px 24px rgba(0,0,0,.2); }
+
+  @keyframes pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+  @keyframes rise { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
+  @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .anim-pop { animation:pop .3s; }
+
+  /* 반응형 */
+  @media (max-width:900px) {
+    .hero { grid-template-columns:1fr; }
+    .hero h1 { font-size:44px; }
+    .benefits { grid-template-columns:1fr; }
+    .nav-menu { display:none; }
+    .split, .review-layout, .photo-review { grid-template-columns:1fr; }
+    .section-head h2 { font-size:32px; }
+    .filter-row { grid-template-columns:1fr; }
+    .review-cards { grid-template-columns:1fr; }
+    .quiz-options { grid-template-columns:1fr; }
+    .stats { gap:24px; flex-wrap:wrap; }
+  }
+  @media (max-width:640px) {
+    .modal { grid-template-columns:1fr; }
+    .modal-img { border-radius:26px 26px 0 0; min-height:240px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">🎀 <b>3만원 이상 무료배송</b> · 오늘의 선물포장 무료 이벤트 진행중</div>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="brand">RI<span class="mid">BON</span>NE</a>
+      <ul class="nav-menu">
+        <li><a href="#shop" onclick="setCatChip('신상품')">신상품</a></li>
+        <li><a href="#shop" onclick="setCatChip('리본')">리본</a></li>
+        <li><a href="#shop" onclick="setCatChip('머리띠')">머리띠</a></li>
+        <li><a href="#shop" onclick="setCatChip('헤어핀')">헤어핀</a></li>
+        <li><a class="on" href="#gift">선물하기</a></li>
+        <li><a href="#random">룩북</a></li>
+        <li><a href="#reviews">후기</a></li>
+      </ul>
+      <div class="nav-icons">
+        <button onclick="showToast('검색은 준비중이에요 🔍')" title="검색"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg></button>
+        <button onclick="showToast('마이페이지 준비중이에요 👤')" title="마이페이지"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
+        <button onclick="setDrawer('wish')" id="wishBtn" title="찜"></button>
+        <button onclick="setDrawer('cart')" id="cartBtn" title="장바구니"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- 히어로 -->
+    <section class="hero">
+      <div>
+        <div class="eyebrow">HAIR ACCESSORY ATELIER</div>
+        <h1 class="serif">오늘의 나를<br>묶는 <span class="hl">작은 리본.</span></h1>
+        <p>단발이든 장발이든, 봄웜이든 겨울쿨이든. RIBONNE는 당신의 헤어스타일과 그날의 기분에 꼭 맞는 리본·머리띠·장식 소품을 골라드려요.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#recommend">나에게 맞는 악세서리 찾기 →</a>
+          <a class="btn outline" href="#gift">🎁 선물하기</a>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>1,200+</b><small>엄선한 디자인</small></div>
+          <div class="stat"><b>4.9</b><small>평균 후기 별점</small></div>
+          <div class="stat"><b>98%</b><small>재구매 만족도</small></div>
+        </div>
+      </div>
+      <div class="atelier">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div class="ph-text">히어로 이미지를 드래그하세요 (리본·헤어 연출컷)</div>
+        <div class="ph-text" style="margin-top:4px">or <a onclick="showToast('이미지 업로드는 준비중이에요 🖼️')">browse files</a></div>
+        <div class="float-card fc-top"><div class="fc-img" style="background:#C3ADFF"></div><div><div class="fc-name">사틴 와이드 밴드</div><div class="fc-sub">겨울쿨 추천</div></div></div>
+        <div class="float-card fc-bottom"><div class="fc-img" style="background:var(--coral)"></div><div><div class="fc-name">오간자 트윈 리본</div><div class="fc-sub">봄웜 추천 · NEW</div></div></div>
+      </div>
+    </section>
+
+    <!-- 혜택 -->
+    <div class="wrap">
+      <div class="benefits">
+        <div class="benefit"><div class="pico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div><b>당일출고 · 무료배송</b><small>3만원 이상 구매 시 전국 무료배송</small></div></div>
+        <div class="benefit"><div class="pico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></div><div><b>무료 선물포장</b><small>포장지와 메시지 카드 선택 가능</small></div></div>
+        <div class="benefit"><div class="pico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 9h20"/><circle cx="7" cy="14" r="1.5"/></svg></div><div><b>퍼스널리 큐레이션</b><small>내 톤과 무드에 맞춰 골라보기</small></div></div>
+      </div>
+    </div>
+
+    <!-- 퍼스널 큐레이션 + 상품 -->
+    <section class="section" id="recommend">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">PERSONAL CURATION</div>
+          <h2 class="serif">헤어스타일별 맞춤 필터</h2>
+          <p class="section-desc">길이와 퍼스널컬러, 오늘의 기분을 고르면 당신에게 어울리는 악세서리만 모아 보여드려요.</p>
+        </div>
+        <div class="filter-panel">
+          <div id="filterRows"></div>
+          <div class="filter-bottom">
+            <span>전체 <b id="count">8</b>개 · 필터를 선택하면 맞춤 추천을 시작해요</span>
+            <button class="btn outline small" id="reset">↺ 필터 초기화</button>
+          </div>
+        </div>
+        <div id="shop"></div>
+        <div class="cards" id="products"></div>
+      </div>
+    </section>
+
+    <!-- 랜덤박스 -->
+    <section class="section" id="random">
+      <div class="wrap split">
+        <div>
+          <div class="section-head">
+            <div class="eyebrow">RANDOM BOX</div>
+            <h2 class="serif">취향은 반영하고,<br>언박싱은 랜덤하게.</h2>
+            <p class="section-desc">완전 랜덤보다 실패가 적게. 원하는 무드를 고르면 리본, 헤어핀, 작은 장식 소품을 어울리는 색감으로 구성해드려요.</p>
+          </div>
+          <div class="white-card">
+            <div class="mood-grid" id="boxBtns"></div>
+            <button class="btn primary" style="margin-top:18px" onclick="addBoxToCart()">이 랜덤박스 담기 →</button>
+          </div>
+        </div>
+        <div class="box-preview" id="boxPreview"></div>
+      </div>
+    </section>
+
+    <!-- 후기 -->
+    <section class="section" id="reviews">
+      <div class="wrap">
+        <div class="section-head center">
+          <div class="eyebrow">REAL PHOTO REVIEW</div>
+          <h2 class="serif">고객님들의 진짜 후기 ♥</h2>
+          <p class="section-desc">구매하신 분들이 직접 남긴 별점과 포토 후기예요. 나와 비슷한 헤어 길이, 컬러, 무드를 찾아보세요.</p>
+        </div>
+        <div class="review-layout">
+          <div class="score">
+            <div class="score-num">4.9</div>
+            <div class="stars">★★★★★</div>
+            <p class="review-count">1,840개의 리얼 후기</p>
+            <div class="bar"><span>5★</span><div class="track"><i style="width:88%"></i></div><span>88%</span></div>
+            <div class="bar"><span>4★</span><div class="track"><i style="width:9%"></i></div><span>9%</span></div>
+            <div class="bar"><span>3★</span><div class="track"><i style="width:2%"></i></div><span>2%</span></div>
+            <div class="bar"><span>2★</span><div class="track"><i style="width:1%"></i></div><span>1%</span></div>
+            <button class="btn primary" style="width:100%;justify-content:center;margin-top:22px" onclick="showToast('후기 작성은 준비중이에요 ✍️')">+ 포토 후기 작성하기</button>
+          </div>
+          <div class="photo-review">
+            <div class="photo-box"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg><span>고객 착용샷 이미지</span><small>or browse files</small></div>
+            <div class="review-body">
+              <span class="badge" style="position:static;display:inline-block;background:var(--rose)">BEST 포토후기</span>
+              <h3>지연 님 <span class="verified">✓ 구매확인</span></h3>
+              <div class="stars" style="text-align:left">★★★★★</div>
+              <p class="quote">"헤어 길이 필터 너무 편해요. 단발인데 어울리는 것만 딱 5분 만에 골랐어요. 벨벳 질감도 고급스럽고 고정력 최고예요."</p>
+              <div class="taglist"><span>단발</span><span>겨울쿨</span><span>벨벳 리본</span><span>데이트룩</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="review-cards">
+          <div class="small-review"><b>세아 님</b> <span class="verified">✓ 구매확인</span><p class="quote">"선물 포장 미리보기 보고 결정했어요. 친구가 박스 열자마자 소리질렀어요."</p><div class="small-img">선물 포장샷</div></div>
+          <div class="small-review"><b>유진 님</b> <span class="verified">✓ 구매확인</span><p class="quote">"가을웜 추천대로 샀더니 인생템 됐어요. 골드 컬러가 제 톤이랑 진짜 잘 맞아요."</p><div class="small-img" style="background:linear-gradient(135deg,#F3DCB4,#FFF5E0)">착용샷</div></div>
+          <div class="small-review"><b>민서 님</b> <span class="verified">✓ 구매확인</span><p class="quote">"세트 구매로 리본이랑 소품 색이 맞춰져서 코디 고민이 없어졌어요."</p><div class="small-img" style="background:linear-gradient(135deg,#D4E6FB,#fff)">세트 착용샷</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 선물 퀴즈 -->
+    <section class="section" id="gift">
+      <div class="wrap split">
+        <div>
+          <div class="section-head">
+            <div class="eyebrow">GIFT TASTE TEST</div>
+            <h2 class="serif">친구 취향을 고르면<br>선물 세트를 골라드려요</h2>
+            <p class="section-desc">받는 사람의 분위기, 자주 입는 룩, 선물 목적만 고르면 포장지와 카드 문구까지 제안해요.</p>
+          </div>
+          <div class="white-card">
+            <div class="quiz-progress"><i id="quizBar"></i></div>
+            <h3 class="quiz-q" id="quizQ">선물 받을 사람의 분위기는?</h3>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div style="display:flex;gap:10px;margin-top:18px">
+              <button class="btn outline small" id="prev">이전</button>
+              <button class="btn primary small" id="next">다음 →</button>
+            </div>
+          </div>
+        </div>
+        <div class="gift-result" id="giftResult"></div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section cta">
+      <div class="wrap">
+        <h2 class="serif">오늘 코디에 딱 맞는<br>작은 포인트를 찾아보세요.</h2>
+        <p class="section-desc" style="max-width:620px;margin:0 auto 28px">리본 하나로 분위기가 바뀌는 순간, RIBONNE가 가장 잘 어울리는 선택지를 먼저 보여드릴게요.</p>
+        <a href="#recommend" class="btn primary">지금 리본 추천받기 →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>RIBONNE · Hair Accessory Atelier · demo homepage</footer>
+
+  <div id="modalRoot"></div>
+  <div id="drawerRoot"></div>
+  <div id="toastRoot"></div>
+
+<script>
+/* =========================================================
+   RIBONNE 통합본
+   - 구조/기능: ChatGPT 버전 (필터 큐레이션 / 랜덤박스 / 선물 퀴즈 / 후기)
+   - 추가 기능: Claude 버전 (장바구니 / 위시리스트 / 색상 미리보기 상세)
+   - 디자인/스킨: Claude 버전 (로즈·코랄 핑크, 고운바탕 명조)
+   ========================================================= */
+var ROSE = "#E0607E";
+var FREE_SHIP = 30000;
+
+/* ---- 토스페이먼츠 테스트 결제 설정 ----
+   아래 키는 토스페이먼츠 공식 문서에 공개된 "테스트용" 키예요.
+   실제 결제가 일어나지 않고, 회원가입/사업자등록 없이 결제창을 띄워볼 수 있어요.
+   나중에 실제 운영할 때는 토스페이먼츠 가입 후 발급받는 '내 키'로 교체하면 돼요. */
+var TOSS_CLIENT_KEY = "test_ck_docs_Ovk5rk1EwkEbP0W43n07xlzm";  // 문서용 테스트 클라이언트 키
+var TOSS_CUSTOMER_KEY = "ribonne_test_customer";                 // 비회원이면 "ANONYMOUS" 도 가능
+
+/* 가격 문자열 "12,900원" → 숫자 12900 */
+function priceNum(str){ return parseInt(str.replace(/[^0-9]/g,""),10); }
+function won(v){ return v.toLocaleString("ko-KR") + "원"; }
+
+/* ---- 상품 데이터 (ChatGPT 구조 + 색상 미리보기용 colors 추가) ---- */
+var products = [
+  { name:'오간자 트윈 리본', price:'12,900원', badge:'NEW', shape:'ribbon', rating:5.0, reviews:731,
+    color:'#e7759b', knot:'#ca4f77', hair:['단발','중단발'], tone:['봄웜','여름쿨'], mood:['청순','러블리'], feeling:['귀여움','설렘'],
+    colors:{'코랄':'#F08398','로즈':'#E0607E','크림':'#F3DCB4'}, why:'단발과 반묶음에 가볍게 얹히는 여리여리한 포인트예요.' },
+  { name:'사틴 와이드 밴드', price:'15,800원', badge:'BEST', shape:'headband', rating:4.9, reviews:902,
+    color:'#6959c8', knot:'#4f41a0', hair:['중단발','장발'], tone:['겨울쿨'], mood:['시크','데일리'], feeling:['차분함','멋짐'],
+    colors:{'라벤더':'#C3ADFF','버건디':'#9E4358','차콜':'#5A4A50'}, why:'긴 생머리와 어두운 코디에 깔끔한 존재감을 더해줘요.' },
+  { name:'벨벳 체리 리본', price:'13,500원', badge:'BEST', shape:'ribbon', rating:4.9, reviews:540,
+    color:'#bd3f65', knot:'#91304f', hair:['단발','올림머리'], tone:['겨울쿨','가을웜'], mood:['키치','하이틴'], feeling:['반짝임','귀여움'],
+    colors:{'버건디':'#9E4358','로즈':'#E0607E','코랄':'#F08398'}, why:'작지만 선명해서 사진 찍는 날 포인트로 좋아요.' },
+  { name:'라벤더 쉬폰 리본', price:'11,900원', badge:'COOL', shape:'ribbon', rating:4.8, reviews:389,
+    color:'#b79be8', knot:'#8b6bc5', hair:['중단발','장발'], tone:['여름쿨'], mood:['청순','발레코어'], feeling:['설렘','차분함'],
+    colors:{'라벤더':'#C3ADFF','스카이':'#9CC6F0','화이트':'#FFFFFF'}, why:'은은한 라벤더 톤이 얼굴 주변을 부드럽게 밝혀줘요.' },
+  { name:'골드 펄 헤어핀', price:'9,900원', badge:'SET', shape:'clip', rating:4.7, reviews:466,
+    color:'#d4b469', knot:'#b89435', hair:['단발','중단발','장발'], tone:['봄웜','가을웜'], mood:['데일리','청순'], feeling:['차분함','반짝임'],
+    colors:{'크림':'#F3DCB4','화이트':'#FFFFFF','로즈':'#E0607E'}, why:'리본과 함께 레이어드하기 좋은 작은 반짝임 포인트예요.' },
+  { name:'블랙 미니 리본핀', price:'8,900원', badge:'DAILY', shape:'clip', rating:4.8, reviews:612,
+    color:'#3f3350', knot:'#271d35', hair:['단발','중단발','장발','올림머리'], tone:['겨울쿨','여름쿨'], mood:['데일리','시크'], feeling:['차분함','멋짐'],
+    colors:{'차콜':'#5A4A50','로즈':'#E0607E','민트':'#A8DDD0'}, why:'등교룩부터 데이트룩까지 실패 없는 기본템이에요.' },
+  { name:'피치 플라워 리본', price:'12,500원', badge:'WARM', shape:'ribbon', rating:4.6, reviews:211,
+    color:'#f1a36e', knot:'#d57b4c', hair:['장발','중단발'], tone:['봄웜','가을웜'], mood:['러블리','발레코어'], feeling:['설렘','귀여움'],
+    colors:{'코랄':'#F08398','크림':'#F3DCB4','로즈':'#E0607E'}, why:'따뜻한 피치 톤이 부드러운 분위기를 만들어줘요.' },
+  { name:'스카이 데님 머리띠', price:'14,500원', badge:'CASUAL', shape:'headband', rating:4.7, reviews:158,
+    color:'#8dbbe7', knot:'#6598cd', hair:['단발','중단발'], tone:['여름쿨','봄웜'], mood:['데일리','하이틴'], feeling:['멋짐','반짝임'],
+    colors:{'스카이':'#9CC6F0','민트':'#A8DDD0','화이트':'#FFFFFF'}, why:'청량한 하이틴 무드로 캐주얼룩에 잘 어울려요.' }
+];
+/* 각 상품에 고유 id 부여 */
+products.forEach(function(p,i){ p.id = i; });
+
+/* 카테고리(네비/룩북용): badge·shape로 매핑 */
+function inCategory(p, cat){
+  if (cat==='신상품') return p.badge==='NEW';
+  if (cat==='리본') return p.shape==='ribbon';
+  if (cat==='머리띠') return p.shape==='headband';
+  if (cat==='헤어핀') return p.shape==='clip';
+  return true;
+}
+var navCat = null; // 네비에서 고른 카테고리
+
+/* ---- 필터 데이터 (ChatGPT) ---- */
+var filterData = {
+  hair:{ label:'헤어 길이', sub:'HAIR LENGTH', items:['단발','중단발','장발','올림머리'] },
+  tone:{ label:'퍼스널컬러', sub:'PERSONAL COLOR', items:['봄웜','여름쿨','가을웜','겨울쿨'], dots:['#ee9b69','#d994bb','#a56c40','#6659bd'] },
+  mood:{ label:'무드별 컬렉션', sub:'MOOD COLLECTION', items:['청순','러블리','키치','시크','발레코어','데일리','하이틴'] },
+  feeling:{ label:'오늘의 기분', sub:'TODAY FEELING', items:['귀여움','설렘','차분함','반짝임','멋짐'] }
+};
+var selected = { hair:null, tone:null, mood:null, feeling:null };
+
+/* ---- 화면 상태 (Claude 장바구니/위시/상세) ---- */
+var state = { detail:null, detailColor:null, qty:1, cart:[], wish:[], drawer:null };
+var toastTimer = null;
+
+/* ---- 색상 보정 & SVG (Claude) ---- */
+function tint(hex, amount){ var n=parseInt(hex.replace("#",""),16),r=(n>>16)&255,g=(n>>8)&255,b=n&255; function mix(c){return Math.round(c+(255-c)*amount);} return "rgb("+mix(r)+","+mix(g)+","+mix(b)+")"; }
+function shade(hex, amount){ var n=parseInt(hex.replace("#",""),16); function cl(c){return Math.max(0,Math.min(255,c+amount));} return "rgb("+cl((n>>16)&255)+","+cl((n>>8)&255)+","+cl(n&255)+")"; }
+function svg(shape, hex, size){
+  size=size||200; var dark=shade(hex,-45); var isW=hex.toUpperCase()==="#FFFFFF"; var st=isW?"#E2D2D6":dark;
+  var o='<svg width="'+size+'" height="'+size+'" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">';
+  if(shape==="ribbon") return o+'<path d="M100 100 C45 52,8 72,24 112 C36 146,82 132,100 102 Z" fill="'+hex+'" stroke="'+st+'" stroke-width="3"/><path d="M100 100 C155 52,192 72,176 112 C164 146,118 132,100 102 Z" fill="'+hex+'" stroke="'+st+'" stroke-width="3"/><path d="M92 106 L66 178 L96 166 Z" fill="'+dark+'"/><path d="M108 106 L134 178 L104 166 Z" fill="'+dark+'"/><rect x="86" y="88" width="28" height="34" rx="11" fill="'+dark+'"/><circle cx="75" cy="92" r="4" fill="#fff" opacity="0.6"/></svg>';
+  if(shape==="headband") return o+'<path d="M28 178 A78 96 0 0 1 172 178" fill="none" stroke="'+hex+'" stroke-width="26" stroke-linecap="round"/><path d="M28 178 A78 96 0 0 1 172 178" fill="none" stroke="'+st+'" stroke-width="26" stroke-linecap="round" opacity="'+(isW?0.5:0.18)+'"/><path d="M100 34 C72 14,52 26,62 46 C70 60,92 50,100 36 Z" fill="'+dark+'"/><path d="M100 34 C128 14,148 26,138 46 C130 60,108 50,100 36 Z" fill="'+dark+'"/><circle cx="100" cy="40" r="9" fill="'+hex+'" stroke="'+st+'" stroke-width="2"/></svg>';
+  if(shape==="clip") return o+'<rect x="38" y="74" width="124" height="52" rx="24" fill="'+hex+'" stroke="'+st+'" stroke-width="3"/><circle cx="68" cy="100" r="8" fill="'+dark+'"/><circle cx="100" cy="100" r="8" fill="'+dark+'"/><circle cx="132" cy="100" r="8" fill="'+dark+'"/><rect x="44" y="80" width="40" height="10" rx="5" fill="#fff" opacity="0.5"/></svg>';
+  if(shape==="heart") return o+'<path d="M100 168 C40 124,30 78,58 58 C80 43,100 64,100 78 C100 64,120 43,142 58 C170 78,160 124,100 168 Z" fill="'+hex+'" stroke="'+st+'" stroke-width="3"/><rect x="96" y="22" width="8" height="22" rx="4" fill="'+dark+'"/><circle cx="100" cy="20" r="9" fill="none" stroke="'+dark+'" stroke-width="5"/></svg>';
+  return o+'<circle cx="100" cy="86" r="56" fill="'+hex+'" stroke="'+st+'" stroke-width="3"/><circle cx="100" cy="86" r="40" fill="#FBEFEF" stroke="'+st+'" stroke-width="2"/><rect x="86" y="138" width="28" height="46" rx="14" fill="'+hex+'" stroke="'+st+'" stroke-width="3"/></svg>';
+}
+function dotStyle(hex, px){ var isW=hex.toUpperCase()==="#FFFFFF"; return "width:"+px+"px;height:"+px+"px;background:"+hex+";"+(isW?"border:2px solid #ECDDE0;":""); }
+var ICON = {
+  heart:function(f){ return '<svg width="20" height="20" viewBox="0 0 24 24" fill="'+(f?"#E0607E":"none")+'" stroke="'+(f?"#E0607E":"currentColor")+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>'; },
+  bag:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+  star:'<svg width="13" height="13" viewBox="0 0 24 24" fill="#F6C76A" stroke="#F6C76A" stroke-width="2"><polygon points="12 2 15 9 22 9 16 14 18 21 12 17 6 21 8 14 2 9 9 9"/></svg>',
+  x:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8C7B82" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C7B82" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  minus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C7B82" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8DDD0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  truck:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+ROSE+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'
+};
+
+/* =========================================================
+   1) 퍼스널 큐레이션 필터 (ChatGPT 기능)
+   ========================================================= */
+var filterRows = document.getElementById('filterRows');
+Object.keys(filterData).forEach(function(key){
+  var d = filterData[key];
+  var row = document.createElement('div');
+  row.className = 'filter-row';
+  var chips = d.items.map(function(it,i){
+    var dotHtml = d.dots ? '<span class="dot" style="background:'+d.dots[i]+'"></span>' : '';
+    return '<button class="chip" data-key="'+key+'" data-val="'+it+'">'+dotHtml+it+'</button>';
+  }).join('');
+  row.innerHTML = '<div class="filter-label">'+d.label+'<small>'+d.sub+'</small></div><div class="chips">'+chips+'</div>';
+  filterRows.appendChild(row);
+});
+filterRows.onclick = function(e){
+  var b = e.target.closest('.chip'); if(!b) return;
+  var k=b.dataset.key, v=b.dataset.val;
+  selected[k] = selected[k]===v ? null : v;
+  navCat = null; // 필터 쓰면 네비 카테고리 해제
+  renderFilters(); renderProducts();
+};
+function renderFilters(){
+  document.querySelectorAll('.chip').forEach(function(b){
+    b.classList.toggle('active', selected[b.dataset.key]===b.dataset.val);
+  });
+}
+function score(p){
+  return Object.keys(selected).reduce(function(s,k){
+    var v=selected[k]; return s + (v && p[k].indexOf(v)>-1 ? 1 : 0);
+  },0);
+}
+function renderProducts(){
+  var active = Object.keys(selected).filter(function(k){return selected[k];}).length;
+  var list = products.slice();
+  // 네비 카테고리 필터
+  if (navCat) list = list.filter(function(p){ return inCategory(p, navCat); });
+  // 점수 정렬/필터
+  list = list.map(function(p){ var c=Object.assign({},p); c.score=score(p); return c; }).sort(function(a,b){ return b.score-a.score; });
+  if (active) list = list.filter(function(p){ return p.score>0; });
+  document.getElementById('count').textContent = list.length;
+  if (list.length===0){
+    document.getElementById('products').innerHTML = '<div class="no-result">조건에 맞는 상품이 없어요. 필터를 조금 풀어보세요 🎀</div>';
+    return;
+  }
+  document.getElementById('products').innerHTML = list.map(function(p){
+    var firstColorName = Object.keys(p.colors)[0];
+    var bg = tint(p.colors[firstColorName], 0.86);
+    var liked = state.wish.indexOf(p.id)>-1;
+    var tags = p.hair.concat(p.tone, p.mood).slice(0,5).map(function(t){ return '<span>'+t+'</span>'; }).join('');
+    var colorDots = Object.keys(p.colors).map(function(cn){ return '<span class="dot-sw" style="'+dotStyle(p.colors[cn],15)+'"></span>'; }).join('');
+    return '<article class="product" onclick="openDetail('+p.id+')">' +
+      '<div class="thumb" style="background:'+bg+'">' +
+        '<span class="badge" style="background:'+(p.badge==="NEW"?ROSE:"#C9A24A")+'">'+p.badge+'</span>' +
+        '<button class="heart-btn'+(liked?' anim-pop':'')+'" onclick="toggleWish('+p.id+', event)">'+ICON.heart(liked)+'</button>' +
+        svg(p.shape, p.colors[firstColorName], 150) +
+      '</div>' +
+      '<div class="rate">'+ICON.star+' <span>'+p.rating+' · 후기 '+p.reviews.toLocaleString()+'</span></div>' +
+      '<h3>'+p.name+'</h3>' +
+      '<div class="taglist">'+tags+'</div>' +
+      '<p class="why">'+p.why+'</p>' +
+      '<div class="dots">'+colorDots+'</div>' +
+      '<div class="price">'+p.price+'</div>' +
+    '</article>';
+  }).join('');
+}
+document.getElementById('reset').onclick = function(){
+  selected = { hair:null, tone:null, mood:null, feeling:null };
+  navCat = null;
+  renderFilters(); renderProducts();
+};
+
+/* 네비 메뉴 → 카테고리 필터 + 스크롤 */
+function setCatChip(cat){
+  navCat = cat;
+  selected = { hair:null, tone:null, mood:null, feeling:null };
+  renderFilters(); renderProducts();
+}
+
+/* =========================================================
+   2) 랜덤박스 (ChatGPT 기능)
+   ========================================================= */
+var boxes = {
+  lovely:{ name:'러블리 피크닉 박스', sub:'연핑크·하트·오간자 중심 구성', price:24900, desc:'사진 찍는 날과 데이트룩에 잘 어울리는 사랑스러운 랜덤박스예요.', items:['오간자 리본 1개','미니 플라워핀 2개','하트 장식 소품 1개','핑크 메시지 카드'] },
+  cool:{ name:'시크 데일리 박스', sub:'블랙·실버·네이비 중심 구성', price:23900, desc:'매일 쓰기 좋은 담백한 컬러로, 깔끔한 코디를 좋아하는 분께 추천해요.', items:['블랙 미니 리본 1개','실버 헤어핀 2개','심플 파우치 1개','무광 카드'] },
+  ballet:{ name:'발레코어 무드 박스', sub:'라벤더·아이보리·쉬폰 구성', price:25900, desc:'여리여리한 분위기를 좋아한다면 가장 실패 확률이 낮은 구성입니다.', items:['쉬폰 리본 1개','펄 헤어핀 2개','레이스 소품 1개','라벤더 포장'] },
+  kitsch:{ name:'키치 하이틴 박스', sub:'체리·데님·컬러핀 구성', price:22900, desc:'친구와 같이 열어보고 싶은 귀엽고 통통 튀는 랜덤박스예요.', items:['체리 리본 1개','컬러핀 2개','랜덤 스티커 1장','틴케이스 포장'] }
+};
+var currentBox = 'lovely';
+var boxBtns = document.getElementById('boxBtns');
+boxBtns.innerHTML = Object.keys(boxes).map(function(k){
+  var b=boxes[k];
+  return '<button class="mood-card '+(k===currentBox?'active':'')+'" data-box="'+k+'">'+b.name+'<small>'+b.sub+'</small></button>';
+}).join('');
+boxBtns.onclick = function(e){
+  var b=e.target.closest('.mood-card'); if(!b) return;
+  currentBox=b.dataset.box;
+  document.querySelectorAll('.mood-card').forEach(function(x){ x.classList.toggle('active', x.dataset.box===currentBox); });
+  renderBox();
+};
+function renderBox(){
+  var b=boxes[currentBox];
+  document.getElementById('boxPreview').innerHTML =
+    '<div class="eyebrow">READY TO OPEN</div>' +
+    '<h3 class="serif">'+b.name+'</h3>' +
+    '<p>'+b.desc+'</p>' +
+    '<div class="items">'+b.items.map(function(x,i){ return '<div class="item"><span>'+x+'</span><b>'+(i<3?'포함':'무료')+'</b></div>'; }).join('')+'</div>' +
+    '<div style="position:absolute;right:30px;bottom:24px;opacity:.7;transform:rotate(-12deg)">'+svg('ribbon','#E0607E',64)+'</div>';
+}
+/* 랜덤박스를 장바구니에 담기 */
+function addBoxToCart(){
+  var b=boxes[currentBox];
+  state.cart.push({ box:true, name:b.name, price:b.price, color:'랜덤구성', qty:1 });
+  renderHeader(); renderDrawer();
+  showToast(b.name+" 담았어요! 🎁");
+}
+
+/* =========================================================
+   3) 선물 취향 테스트 퀴즈 (ChatGPT 기능)
+   ========================================================= */
+var quiz = [
+  { q:'선물 받을 사람의 분위기는?', a:['여리여리한 친구','키치한 친구','차분한 친구','공주풍을 좋아하는 친구'] },
+  { q:'자주 입는 룩은?', a:['니트/원피스','후디/데님','블랙 코디','샤랄라한 스커트'] },
+  { q:'선물 목적은?', a:['생일 선물','가볍게 고마움 표시','졸업/입학 선물','기념일 선물'] },
+  { q:'원하는 포인트는?', a:['은은하게','귀엽게','고급스럽게','확실하게'] }
+];
+var step=0, answers=[];
+function renderQuiz(){
+  document.getElementById('quizQ').textContent = quiz[step].q;
+  document.getElementById('quizBar').style.width = ((step+1)/quiz.length*100)+'%';
+  document.getElementById('quizOptions').innerHTML = quiz[step].a.map(function(v){
+    return '<button class="quiz-option'+(answers[step]===v?' active':'')+'">'+v+'</button>';
+  }).join('');
+  renderGift();
+}
+document.getElementById('quizOptions').onclick = function(e){
+  if(!e.target.classList.contains('quiz-option')) return;
+  answers[step]=e.target.textContent; renderQuiz();
+};
+document.getElementById('next').onclick = function(){ if(step<quiz.length-1){ step++; renderQuiz(); } };
+document.getElementById('prev').onclick = function(){ if(step>0){ step--; renderQuiz(); } };
+function renderGift(){
+  var main = answers[0] || '여리여리한 친구';
+  var title='라벤더 리본 선물 세트', items=['오간자 리본 1개','미니 헤어핀 2개','라벤더 포장지','손글씨 카드'];
+  if(main.indexOf('키치')>-1){ title='체리 하이틴 선물 세트'; items=['체리 리본 1개','컬러 헤어핀 2개','랜덤 스티커','틴케이스 포장']; }
+  if(main.indexOf('차분')>-1){ title='블랙 사틴 데일리 세트'; items=['블랙 리본핀 1개','실버 헤어핀 2개','무광 카드','심플 파우치']; }
+  if(main.indexOf('공주')>-1){ title='발레코어 쉬폰 선물 세트'; items=['쉬폰 리본 1개','펄 헤어핀 2개','레이스 포장','라벤더 카드']; }
+  document.getElementById('giftResult').innerHTML =
+    '<div class="eyebrow">GIFT RECOMMENDATION</div>' +
+    '<h3 class="serif">'+title+'</h3>' +
+    '<p>'+main+'에게 어울리는 선물 구성이에요. 부담스럽지 않게 예쁘고, 포장까지 감성적으로 완성해드려요.</p>' +
+    '<ul>'+items.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'<li>추천 카드 문구: "오늘도 너답게 반짝여!"</li></ul>' +
+    '<button class="btn primary" onclick="showToast(\''+title+' 담았어요! 🎁\')">이 구성으로 선물하기 →</button>';
+}
+
+/* =========================================================
+   4) 장바구니 / 위시리스트 / 색상 미리보기 상세 (Claude 기능)
+   ========================================================= */
+function find(id){ return products.find(function(p){ return p.id===id; }); }
+function openDetail(id){ var p=find(id); state.detail=p; state.detailColor=Object.keys(p.colors)[0]; state.qty=1; renderModal(); }
+function closeDetail(){ state.detail=null; renderModal(); }
+function pickColor(name){ state.detailColor=name; renderModal(); }
+function changeQty(d){ state.qty=Math.max(1,state.qty+d); renderModal(); }
+function toggleWish(id, ev){ if(ev) ev.stopPropagation(); var i=state.wish.indexOf(id); if(i>-1) state.wish.splice(i,1); else state.wish.push(id); renderProducts(); renderHeader(); renderModal(); renderDrawer(); }
+function addToCart(id, color, count){
+  var p=find(id); count=count||1;
+  var i=state.cart.findIndex(function(x){ return x.id===id && x.color===color; });
+  if(i>-1) state.cart[i].qty+=count;
+  else state.cart.push({ id:id, name:p.name, price:priceNum(p.price), shape:p.shape, colorHex:p.colors[color], color:color, qty:count });
+  renderHeader(); renderDrawer(); showToast(p.name+" 담았어요! 🎀");
+}
+function addFromDetail(){ addToCart(state.detail.id, state.detailColor, state.qty); closeDetail(); }
+function updateCartQty(idx,d){ state.cart[idx].qty+=d; if(state.cart[idx].qty<=0) state.cart.splice(idx,1); renderHeader(); renderDrawer(); }
+function removeCart(idx){ state.cart.splice(idx,1); renderHeader(); renderDrawer(); }
+function setDrawer(w){ state.drawer=w; renderDrawer(); }
+function closeDrawer(){ state.drawer=null; renderDrawer(); }
+function showToast(msg){ var r=document.getElementById("toastRoot"); r.innerHTML='<div class="toast">'+ICON.check+' '+msg+'</div>'; if(toastTimer) clearTimeout(toastTimer); toastTimer=setTimeout(function(){ r.innerHTML=""; },2200); }
+function cartCount(){ return state.cart.reduce(function(s,x){ return s+x.qty; },0); }
+function cartTotal(){ return state.cart.reduce(function(s,x){ return s + (x.price||0)*x.qty; },0); }
+
+function renderHeader(){
+  var wc=state.wish.length, cc=cartCount();
+  document.getElementById("wishBtn").innerHTML = ICON.heart(false) + (wc>0?'<span class="nbadge anim-pop">'+wc+'</span>':'');
+  document.getElementById("cartBtn").innerHTML = ICON.bag + (cc>0?'<span class="nbadge anim-pop">'+cc+'</span>':'');
+}
+function renderModal(){
+  var root=document.getElementById("modalRoot"); var p=state.detail;
+  if(!p){ root.innerHTML=""; return; }
+  var color=state.detailColor, hex=p.colors[color], bg=tint(hex,0.84), liked=state.wish.indexOf(p.id)>-1;
+  var swatches=Object.keys(p.colors).map(function(cn){ return '<button class="swatch'+(color===cn?' active':'')+'" style="'+dotStyle(p.colors[cn],34)+'" onclick="pickColor(\''+cn+'\')" title="'+cn+'"></button>'; }).join('');
+  root.innerHTML = '<div class="overlay" onclick="closeDetail()"><div class="modal" onclick="event.stopPropagation()">' +
+    '<div class="modal-img" style="background:'+bg+'">'+svg(p.shape,hex,250)+'</div>' +
+    '<div class="modal-info"><button class="close" onclick="closeDetail()">'+ICON.x+'</button>' +
+      '<span class="cat-tag">'+(p.tone[0])+' 추천</span>' +
+      '<h2 class="serif">'+p.name+'</h2>' +
+      '<div class="modal-rate">'+ICON.star+' '+p.rating+' · 후기 '+p.reviews.toLocaleString()+'개</div>' +
+      '<div class="modal-price">'+p.price+'</div>' +
+      '<p class="modal-why">'+p.why+'</p>' +
+      '<div class="swatch-label">색상 <b style="color:var(--ink)">'+color+'</b></div>' +
+      '<div class="swatches">'+swatches+'</div>' +
+      '<div class="size-note">📏 가벼운 무게로 두피 부담 없어요 · 당일출고</div>' +
+      '<div class="qty-row"><span style="font-size:14px;color:var(--gray)">수량</span><div class="qty">' +
+        '<button class="qbtn" onclick="changeQty(-1)">'+ICON.minus+'</button><span class="qnum">'+state.qty+'</span>' +
+        '<button class="qbtn" onclick="changeQty(1)">'+ICON.plus+'</button></div></div>' +
+      '<div class="actions"><button class="wish-lg" onclick="toggleWish('+p.id+')">'+ICON.heart(liked)+'</button>' +
+        '<button class="add-btn" onclick="addFromDetail()">장바구니에 담기</button></div>' +
+    '</div></div></div>';
+}
+function renderDrawer(){
+  var root=document.getElementById("drawerRoot");
+  if(!state.drawer){ root.innerHTML=""; return; }
+  var isCart=state.drawer==="cart", body="";
+  if(isCart){
+    body = state.cart.length===0 ? '<div class="empty">'+ICON.bag+'<span>아직 담은 상품이 없어요</span></div>'
+      : state.cart.map(function(item,idx){
+        var img = item.box ? svg('ribbon','#E0607E',56) : svg(item.shape, item.colorHex, 56);
+        var bgc = item.box ? tint('#E0607E',0.86) : tint(item.colorHex,0.86);
+        return '<div class="citem"><div class="citem-img" style="background:'+bgc+'">'+img+'</div>' +
+          '<div class="citem-body"><div class="citem-name">'+item.name+'</div><div class="citem-opt">'+item.color+'</div>' +
+          '<div class="citem-foot"><div class="mini-qty"><button class="mini-qbtn" onclick="updateCartQty('+idx+',-1)">'+ICON.minus+'</button>' +
+          '<span class="mini-qnum">'+item.qty+'</span><button class="mini-qbtn" onclick="updateCartQty('+idx+',1)">'+ICON.plus+'</button></div>' +
+          '<span style="font-size:15px;font-weight:700;font-family:Gowun Batang;color:var(--rose)">'+won(item.price*item.qty)+'</span></div></div>' +
+          '<button class="x-btn" onclick="removeCart('+idx+')">'+ICON.x+'</button></div>';
+      }).join("");
+  } else {
+    body = state.wish.length===0 ? '<div class="empty">'+ICON.heart(false)+'<span>찜한 상품이 없어요</span></div>'
+      : state.wish.map(function(id){ var p=find(id); var cn=Object.keys(p.colors)[0]; var hex=p.colors[cn];
+        return '<div class="citem"><div class="citem-img" style="background:'+tint(hex,0.86)+';cursor:pointer" onclick="closeDrawer(); openDetail('+id+')">'+svg(p.shape,hex,56)+'</div>' +
+          '<div class="citem-body"><div class="citem-name">'+p.name+'</div>' +
+          '<div style="font-size:15px;font-weight:700;font-family:Gowun Batang;color:var(--rose);margin:4px 0 8px">'+p.price+'</div>' +
+          '<button class="small-add" onclick="addToCart('+id+',\''+cn+'\',1)">담기</button></div>' +
+          '<button class="x-btn" style="color:var(--rose)" onclick="toggleWish('+id+')">'+ICON.heart(true)+'</button></div>';
+      }).join("");
+  }
+  var footer="";
+  if(isCart && state.cart.length>0){
+    var total=cartTotal(), remain=Math.max(0,FREE_SHIP-total), pct=Math.min(100,(total/FREE_SHIP)*100);
+    var msg = remain>0 ? '<span><b style="color:var(--rose)">'+won(remain)+'</b> 더 담으면 무료배송!</span>' : '<b style="color:var(--rose)">무료배송 적용 완료! 🎉</b>';
+    footer = '<div class="checkout"><div class="ship-text">'+ICON.truck+' '+msg+'</div>' +
+      '<div class="ship-bar"><div class="ship-fill" style="width:'+pct+'%"></div></div>' +
+      '<div class="total-row"><span style="color:var(--gray)">총 결제금액</span><span class="total-num">'+won(total)+'</span></div>' +
+      '<button class="order-btn" onclick="requestTossPayment()">결제하기</button></div>';
+  }
+  var title = isCart ? ("장바구니 "+cartCount()) : ("찜한 상품 "+state.wish.length);
+  root.innerHTML = '<div class="overlay" onclick="closeDrawer()"><div class="drawer" onclick="event.stopPropagation()">' +
+    '<div class="drawer-head"><h3 class="serif">'+title+'</h3><button class="close" onclick="closeDrawer()">'+ICON.x+'</button></div>' +
+    '<div class="drawer-body">'+body+'</div>'+footer+'</div></div>';
+}
+
+/* =========================================================
+   5) 토스페이먼츠 테스트 결제 (실제 결제창 띄우기)
+   ========================================================= */
+/* 주문번호 생성: 영문/숫자/-/_/= 로 6~64자 (문서 규칙) */
+function makeOrderId(){
+  return "RIBONNE-" + Date.now() + "-" + Math.random().toString(36).slice(2,8);
+}
+
+async function requestTossPayment(){
+  // 1) 장바구니가 비어있으면 막기
+  if (state.cart.length === 0){ showToast("장바구니가 비어 있어요 🛍️"); return; }
+
+  // 2) SDK 로드 확인
+  if (typeof TossPayments === "undefined"){
+    showToast("결제 모듈을 불러오지 못했어요. 인터넷 연결을 확인해 주세요 🔌");
+    return;
+  }
+
+  var total = cartTotal();
+  // 주문명: "오간자 트윈 리본 외 2건" 형태
+  var firstName = state.cart[0].name;
+  var orderName = state.cart.length > 1 ? (firstName + " 외 " + (state.cart.length-1) + "건") : firstName;
+
+  // 새로고침해도 금액 검증을 할 수 있도록 주문 정보를 임시 저장
+  var orderId = makeOrderId();
+  try {
+    sessionStorage.setItem("ribonne_order", JSON.stringify({ orderId: orderId, amount: total, orderName: orderName }));
+  } catch(e) {}
+
+  try {
+    // 3) SDK 초기화 → 결제창(payment) 객체 생성
+    var tossPayments = TossPayments(TOSS_CLIENT_KEY);
+    var payment = tossPayments.payment({ customerKey: TOSS_CUSTOMER_KEY });
+
+    // 4) 결제창 열기 (카드/간편결제 통합창)
+    await payment.requestPayment({
+      method: "CARD",
+      amount: { currency: "KRW", value: total },
+      orderId: orderId,
+      orderName: orderName,
+      successUrl: window.location.origin + window.location.pathname.replace(/[^/]*$/, "") + "payment-success.html",
+      failUrl: window.location.origin + window.location.pathname.replace(/[^/]*$/, "") + "payment-fail.html",
+      customerName: "테스트 주문자"
+    });
+    // 성공하면 successUrl 페이지로 자동 이동해요.
+  } catch (err) {
+    // 사용자가 결제창을 닫거나 오류가 났을 때
+    if (err && err.code === "USER_CANCEL"){
+      showToast("결제를 취소했어요");
+    } else {
+      showToast("결제 중 문제가 생겼어요: " + (err && err.message ? err.message : "알 수 없는 오류"));
+    }
+  }
+}
+
+/* =========================================================
+   첫 화면 그리기
+   ========================================================= */
+renderFilters();
+renderProducts();
+renderBox();
+renderQuiz();
+renderHeader();
+</script>
+</body>
+</html>
