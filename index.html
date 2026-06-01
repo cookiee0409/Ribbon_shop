@@ -455,7 +455,7 @@ var FREE_SHIP = 30000;
    아래 키는 토스페이먼츠 공식 문서에 공개된 "테스트용" 키예요.
    실제 결제가 일어나지 않고, 회원가입/사업자등록 없이 결제창을 띄워볼 수 있어요.
    나중에 실제 운영할 때는 토스페이먼츠 가입 후 발급받는 '내 키'로 교체하면 돼요. */
-var TOSS_CLIENT_KEY = "test_ck_docs_Ovk5rk1EwkEbP0W43n07xlzm";  // 문서용 테스트 클라이언트 키
+var TOSS_CLIENT_KEY = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";  // 문서용 결제위젯 테스트 클라이언트 키
 // 비회원 결제라 customerKey 는 코드에서 TossPayments.ANONYMOUS 를 사용해요
 
 /* 가격 문자열 "12,900원" → 숫자 12900 */
@@ -796,63 +796,28 @@ function makeOrderId(){
   return "RIBONNE-" + Date.now() + "-" + Math.random().toString(36).slice(2,8);
 }
 
-async function requestTossPayment(){
-  // 1) 장바구니가 비어있으면 막기
+/* "결제하기" → 주문 정보를 저장하고 결제 페이지(checkout.html)로 이동
+   (실제 토스 결제위젯은 checkout.html 에서 렌더링돼요) */
+function requestTossPayment(){
   if (state.cart.length === 0){ showToast("장바구니가 비어 있어요 🛍️"); return; }
 
-  // 2) SDK 로드 확인
-  if (typeof TossPayments === "undefined"){
-    showToast("결제 모듈을 불러오지 못했어요. 인터넷 연결을 확인해 주세요 🔌");
-    return;
-  }
-
-  // 결제 금액은 반드시 정수여야 해요 (소수점/문자 섞임 방지)
   var total = Math.round(Number(cartTotal()) || 0);
   if (total <= 0){ showToast("결제 금액이 올바르지 않아요"); return; }
 
-  // 주문명: "오간자 트윈 리본 외 2건" 형태
   var firstName = state.cart[0].name;
   var orderName = state.cart.length > 1 ? (firstName + " 외 " + (state.cart.length-1) + "건") : firstName;
-
-  // 새로고침해도 금액 검증을 할 수 있도록 주문 정보를 임시 저장
   var orderId = makeOrderId();
+
+  // 결제 페이지에서 꺼내 쓸 수 있도록 주문 정보를 저장
   try {
-    sessionStorage.setItem("ribonne_order", JSON.stringify({ orderId: orderId, amount: total, orderName: orderName }));
+    sessionStorage.setItem("ribonne_order", JSON.stringify({
+      orderId: orderId, amount: total, orderName: orderName, count: cartCount()
+    }));
   } catch(e) {}
 
-  try {
-    // 현재 페이지가 있는 폴더 경로 ("/" 또는 "/index.html" 둘 다 안전하게 처리)
-    var baseDir = window.location.pathname.replace(/[^/]*$/, ""); // 끝의 파일명만 제거
-    var baseUrl = window.location.origin + baseDir;
-
-    // 3) SDK 초기화 → 결제창(payment) 객체 생성
-    // 비회원 결제는 customerKey 자리에 "ANONYMOUS" 를 넣어요 (가장 안전)
-    var tossPayments = TossPayments(TOSS_CLIENT_KEY);
-    var payment = tossPayments.payment({ customerKey: TossPayments.ANONYMOUS });
-
-    // 4) 결제창 열기 (카드/간편결제 통합창)
-    await payment.requestPayment({
-      method: "CARD",
-      amount: { currency: "KRW", value: total },
-      orderId: orderId,
-      orderName: orderName,
-      successUrl: baseUrl + "payment-success.html",
-      failUrl: baseUrl + "payment-fail.html",
-      customerName: "테스트 주문자"
-    });
-    // 성공하면 successUrl 페이지로 자동 이동해요.
-  } catch (err) {
-    // 콘솔에 전체 에러를 남겨서 F12 → Console 에서 원인을 볼 수 있게 함
-    console.error("[결제 오류]", err);
-    var code = (err && err.code) ? err.code : "";
-    var msg = (err && err.message) ? err.message : "알 수 없는 오류";
-    if (code === "USER_CANCEL"){
-      showToast("결제를 취소했어요");
-    } else {
-      // 에러 코드까지 화면에 표시 → 원인 파악이 쉬워짐
-      showToast("결제 오류" + (code ? " ["+code+"]" : "") + ": " + msg);
-    }
-  }
+  // 결제 페이지로 이동
+  var baseDir = window.location.pathname.replace(/[^/]*$/, "");
+  window.location.href = window.location.origin + baseDir + "checkout.html";
 }
 
 /* =========================================================
